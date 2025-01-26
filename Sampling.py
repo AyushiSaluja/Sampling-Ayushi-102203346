@@ -8,7 +8,7 @@ Original file is located at
 """
 
 # Sampling and Model Evaluation Script
-# Author: Kamya_Mehra_102213025_3C75
+# Author: Ayushi_Saluja_102213346_3C71
 # Date: 25 January 2025
 
 import pandas as pd
@@ -21,33 +21,30 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 
-# Load dataset
 credit_data = pd.read_csv("/content/Creditcard_data.csv")
 print(credit_data.head())
 print(credit_data.info())
 print(credit_data.describe())
 
-# Check class distribution
 class_distribution = credit_data['Class'].value_counts(normalize=True) * 100
 print("Class Distribution:\n", class_distribution)
 
-# Apply SMOTE to balance the classes
+
 features = credit_data.drop(columns=['Class'])
 target = credit_data['Class']
 
 smote = SMOTE(random_state=42)
 features_balanced, target_balanced = smote.fit_resample(features, target)
 
-# Check the new class distribution
 balanced_class_distribution = target_balanced.value_counts(normalize=True) * 100
 print("Balanced Class Distribution:\n", balanced_class_distribution)
 
-# Split the balanced dataset into training and testing sets
+
 X_train, X_test, y_train, y_test = train_test_split(
     features_balanced, target_balanced, test_size=0.3, random_state=42, stratify=target_balanced
 )
 
-# Define sampling techniques
+
 def random_sampling(features, target, sample_size):
     random_indices = np.random.choice(len(features), size=sample_size, replace=False)
     return features.iloc[random_indices], target.iloc[random_indices]
@@ -55,10 +52,8 @@ def random_sampling(features, target, sample_size):
 def stratified_sampling(features, target, sample_size):
     return train_test_split(features, target, train_size=sample_size, random_state=42, stratify=target)
 
-# Define sampling sizes
 sampling_sizes = [100, 200, 300, 400, 500]
 
-# Define models
 classification_models = {
     "Logistic Regression": LogisticRegression(max_iter=1000),
     "Decision Tree": DecisionTreeClassifier(),
@@ -67,28 +62,22 @@ classification_models = {
     "Gradient Boosting": GradientBoostingClassifier()
 }
 
-# Store results
 model_results = {}
 
-# Sampling and model training
 for sample_index, sample_size in enumerate(sampling_sizes):
     sample_key = f"Sample {sample_index + 1}"
     model_results[sample_key] = {}
 
-    # Apply random sampling
     sampled_features, sampled_target = random_sampling(X_train, y_train, sample_size)
 
     for model_name, model in classification_models.items():
         # Train the model
         model.fit(sampled_features, sampled_target)
 
-        # Test the model
         predictions = model.predict(X_test)
 
-        # Evaluate accuracy
         model_accuracy = accuracy_score(y_test, predictions)
         model_results[sample_key][model_name] = model_accuracy
 
-# Display results
 results_dataframe = pd.DataFrame(model_results)
 print("Model Results:\n", results_dataframe)
